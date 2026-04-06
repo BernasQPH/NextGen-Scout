@@ -11,6 +11,7 @@ Este projeto é uma aplicação de monitorização de jovens talentos, permitind
 
 ### 1. Base de Dados
 - Certifique-se que tem o **Laragon** (ou XAMPP) ativo.
+- Instale o myphpadmin.
 - Crie uma base de dados chamada `nextgen_scout`.
 - Importa o ficheiro `nextgen_scout.sql` (incluído na raiz deste repositório).
 
