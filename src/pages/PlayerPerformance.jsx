@@ -188,12 +188,8 @@ export default function PlayerPerformance() {
         </main>
       </div>
 
-      {/* ========================================================================= */}
-      {/* VERSÃO MOBILE (Design em Cartões) - visível só em ecrãs pequenos            */}
-      {/* ========================================================================= */}
       <div className="flex lg:hidden flex-col h-full w-full overflow-hidden relative">
         
-        {/* OVERLAY E MENU MOBILE */}
         {isMobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
