@@ -7,16 +7,25 @@ import Perfil from './pages/Perfil';
 import Comparison from './pages/Comparison';
 import DreamTeam from './pages/DreamTeam';
 import Academies from './pages/Academies';
+import Simulator from './pages/Simulator'; 
+import Register from './pages/Register'; 
+import PlayerPerformance from './pages/PlayerPerformance'; 
 
 export default function App() {
   return (
     <Routes>
       {/* Esta rota define que quando o caminho for vazio (página inicial), 
           o componente Dashboard será renderizado */}
-      <Route path="/" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       
       {
       <Route path="/search" element={<PlayerSearch />} />
+      
+      
+      }
+
+      {
+      <Route path="/" element={<Register />} />
       
       
       }
@@ -50,7 +59,24 @@ export default function App() {
       
       
       }
+
+       {
+      <Route path="/simulator" element={<Simulator />} />
       
+      
+      }
+      
+      {
+      <Route path="/register" element={<Register />} />
+      
+      
+      }
+
+      {
+      <Route path="/player-performance" element={<PlayerPerformance />} />
+      
+      
+      }
       
     </Routes>
   );

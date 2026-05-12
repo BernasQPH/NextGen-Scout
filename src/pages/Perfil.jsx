@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Star, StarHalf } from 'lucide-react'; // Adicionadas as estrelas aqui!
+import { Star, StarHalf } from 'lucide-react'; 
 
 const Perfil = () => {
     const { id } = useParams();
@@ -85,6 +85,31 @@ const Perfil = () => {
 
     const overallScore = getOverallRating();
 
+    // --- ALGORITMO DO VEREDICTO DINÂMICO (7 NÍVEIS) ---
+    const getScoutVerdict = (score) => {
+        const numScore = Number(score);
+        
+        if (numScore >= 17) {
+            return "ELITE PROSPECT: This player demonstrates world-class potential. His tactical intelligence and technical execution are far above average for his age group.";
+        } 
+        if (numScore >= 15) {
+            return "HIGHLY RECOMMENDED: Significant technical overhead. He has the discipline and the skillset to become a key player in any top-tier tactical system.";
+        }
+        if (numScore >= 13) {
+            return "PROMISING TALENT: Shows consistent performance and reliable technical foundations. Definitely worth close observation for future squad integration.";
+        }
+        if (numScore >= 11) {
+            return "SOLID ROTATION: A balanced player with decent attributes. While not a standout star yet, his versatility makes him a reliable tactical asset.";
+        }
+        if (numScore >= 9) {
+            return "DEVELOPING PLAYER: Shows some interesting flashes, but lacks the consistency required for high-level competitive environments at the moment.";
+        }
+        if (numScore >= 7) {
+            return "AVERAGE POTENTIAL: Current data suggests limited growth. He might struggle against high-intensity opposition without significant specialized training.";
+        }
+        return "LOW PRIORITY: Based on current metrics, the player does not meet the minimum tactical requirements for our elite observation protocol.";
+    };
+
     // --- ALGORITMO DAS ESTRELAS ---
     const getStarRating = (score) => {
         const numScore = Number(score);
@@ -106,13 +131,10 @@ const Perfil = () => {
         const stars = [];
         for (let i = 1; i <= 5; i++) {
             if (rating >= i) {
-                // Estrela Cheia
                 stars.push(<Star key={i} size={18} className="text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" fill="currentColor" />);
             } else if (rating >= i - 0.5) {
-                // Meia Estrela
                 stars.push(<StarHalf key={i} size={18} className="text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" fill="currentColor" />);
             } else {
-                // Estrela Vazia
                 stars.push(<Star key={i} size={18} className="text-gray-700" />);
             }
         }
@@ -168,14 +190,13 @@ const Perfil = () => {
                     ← BACK
                 </button>
                 <div className="text-[10px] font-black text-blue-400 tracking-[0.2em] uppercase">
-                    Observating: {player["COL 2"]}
+                    Observing: {player["COL 2"]}
                 </div>
             </header>
 
             <main className="max-w-4xl mx-auto px-6 py-12">
                 <div className="p-10 bg-gray-900 rounded-3xl mb-6 text-center shadow-lg border border-gray-800 relative overflow-hidden">
                     
-                    {/* BADGE DA NOTA GLOBAL DINÂMICA */}
                     <div className="absolute top-6 right-6 flex flex-col items-center justify-center">
                         <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-black shadow-lg border-2 
                             ${overallScore >= 16 ? 'bg-emerald-600/20 text-emerald-400 border-emerald-500' : 
@@ -196,7 +217,6 @@ const Perfil = () => {
                         {player["COL 4"]}
                     </p>
                     
-                    {/* APRESENTAÇÃO DAS ESTRELAS */}
                     <RenderStars rating={playerStars} />
                 </div>
 
@@ -239,7 +259,7 @@ const Perfil = () => {
                 <div className="p-6 mt-6 bg-gray-900 rounded-2xl border border-gray-700 shadow-sm text-center">
                     <p className="text-[11px] font-black uppercase text-gray-400 mb-2 tracking-widest">Scout Verdict</p>
                     <p className="text-sm font-bold text-white max-w-xl mx-auto leading-relaxed">
-                        Player is highly recommended for tactical review based on strong positional play.
+                        {getScoutVerdict(overallScore)}
                     </p>
                 </div>
             </main>
