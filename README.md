@@ -5,15 +5,15 @@ Este projeto é uma aplicação de monitorização de jovens talentos, permitind
 ##  Tecnologias Utilizadas
 - **Frontend:** React.js, Tailwind CSS, Lucide React
 - **Backend:** Node.js, Express
-- **Base de Dados:** MySQL (via Laragon / phpMyAdmin)
+- **Base de Dados:** SQL
 
 ##  Como Instalar e Correr
 
 ### 1. Base de Dados
-- Certifique-se que tem o **Laragon** (ou XAMPP) ativo.
-- Instale o myphpadmin.
-- Crie uma base de dados chamada `nextgen_scout`.
-- Importa o ficheiro `nextgen_scout.sql` (incluído na raiz deste repositório).
+O projeto utiliza um esquema relacional fornecido no ficheiro SQL incluído.
+- Utilize o seu gestor de base de dados de preferência (MySQL, MariaDB, etc...).
+- Crie uma base de dados (schema) com o nome `nextgen_scout`.
+- Importe o ficheiro **`nextgen-scout.sql`** presente na raiz do projeto. 
 
 ### 2. Backend (Servidor)
 - Abra o terminal na pasta do servidor.
@@ -22,7 +22,6 @@ Este projeto é uma aplicação de monitorização de jovens talentos, permitind
 
 ### 3. Frontend (Interface)
 - Abra outro terminal na pasta do projeto React.
-- Instale as dependências: `npm install`
 - Inicie a aplicação: `npm run dev`
 - O projeto abrirá no localhost.
 
