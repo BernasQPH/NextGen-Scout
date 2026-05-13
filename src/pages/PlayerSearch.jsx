@@ -19,6 +19,21 @@ const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
   </div>
 );
 
+const getAcademyName = (id) => {
+  const academies = {
+    "1": "Benfica Campus",
+    "2": "La Masia",
+    "3": "Academia Cristiano Ronaldo",
+    "4": "FC Porto Academy",
+    "5": "Yung Ajax",
+    "6": "SC Braga Academy",
+    "7": "La Fabrica",
+    "8": "Academia River Plate",
+    "9": "Chelsea Academy"
+  };
+  return academies[String(id)] || id;
+};
+
 export default function PlayerSearch() {
   const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
@@ -28,11 +43,9 @@ export default function PlayerSearch() {
   const [ageFilter, setAgeFilter] = useState("All Ages");
   const [username, setUsername] = useState(null);
 
-  // Estado para controlar o Menu Hambúrguer no telemóvel
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Verificar sessão
     const savedUser = localStorage.getItem('nextgen_user');
     if (savedUser) {
       try {
@@ -45,12 +58,10 @@ export default function PlayerSearch() {
       navigate('/register');
     }
 
-    // 1. Carregar jogadores
     axios.get('http://localhost:3001/api/players')
       .then(res => setPlayers(res.data))
       .catch(err => console.error("Erro ao carregar jogadores:", err));
 
-    // 2. Carregar a shortlist e sincronizar as estrelas
     axios.get('http://localhost:3001/api/shortlist-players')
       .then(res => {
         const idsBD = res.data.map(item => item.player_id);
@@ -60,18 +71,15 @@ export default function PlayerSearch() {
       .catch(err => console.error("Erro ao sincronizar shortlist:", err));
   }, []);
 
-  // FUNÇÃO DE LOGOUT
   const handleLogout = () => {
     localStorage.removeItem('nextgen_user');
     navigate('/register');
   };
 
-  // FUNÇÃO DE TOGGLE (ADICIONAR/REMOVER)
   const toggleShortlist = async (valorIdReal) => {
     const isAlreadyInShortlist = shortlist.includes(valorIdReal);
 
     if (isAlreadyInShortlist) {
-      // REMOVER
       try {
         await axios.delete(`http://localhost:3001/api/shortlist/${valorIdReal}`);
         setShortlist(shortlist.filter(id => id !== valorIdReal));
@@ -79,7 +87,6 @@ export default function PlayerSearch() {
         console.error("Erro ao remover:", err);
       }
     } else {
-      // ADICIONAR
       try {
         await axios.post('http://localhost:3001/api/shortlist', {
           player_id: valorIdReal, 
@@ -93,26 +100,23 @@ export default function PlayerSearch() {
   };
 
   const filteredPlayers = players.filter(p => {
+    const academyName = getAcademyName(p['COL 3']);
     const matchesName = p['COL 2']?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        p['COL 3']?.toLowerCase().includes(searchTerm.toLowerCase());
+                        academyName?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPos = posFilter === "All Positions" || p['COL 4'] === posFilter;
-    const matchesAge = ageFilter === "All Ages" || p['COL 6']?.toString() === ageFilter;
+    const matchesAge = ageFilter === "All Ages" || p['COL 15']?.toString() === ageFilter;
     return matchesName && matchesPos && matchesAge;
   });
 
   const positions = ["All Positions", ...new Set(players.map(p => p['COL 4']).filter(Boolean))];
-  const ages = ["All Ages", ...new Set(players.map(p => p['COL 6']).filter(Boolean))].sort();
+  const ages = ["All Ages", ...new Set(players.map(p => p['COL 15']).filter(Boolean))].sort();
 
   return (
-    // DIV MESTRE: Tranca o ecrã e impede scroll duplo
     <div className="h-screen w-screen bg-[#0b1120] text-white overflow-hidden font-sans relative">
 
-      {/* ========================================================================= */}
-      {/* VERSÃO DESKTOP (A TUA ORIGINAL E INTOCÁVEL) - visível só em lg e maior      */}
-      {/* ========================================================================= */}
+     
       <div className="hidden lg:flex h-full w-full overflow-hidden">
         
-        {/* BARRA LATERAL FIXA */}
         <aside className="w-72 bg-[#0f172a] p-8 flex flex-col border-r border-gray-800 shrink-0 h-full">
           <div className="flex items-center gap-3 text-blue-500 font-black text-2xl mb-12 uppercase italic tracking-tighter">
             <Trophy size={28} className="fill-blue-500/20" />
@@ -129,7 +133,6 @@ export default function PlayerSearch() {
           </nav>
         </aside>
 
-        {/* MAIN CONTENT */}
         <main className="flex-1 flex flex-col min-w-0 bg-[#0b1120] overflow-hidden">
           <div className="p-10 h-full flex flex-col">
             
@@ -219,7 +222,7 @@ export default function PlayerSearch() {
                           </div>
                         </td>
                         <td className="py-8 px-6">
-                          <span className="text-gray-400 font-medium text-sm">{player['COL 3']}</span>
+                          <span className="text-gray-400 font-medium text-sm">{getAcademyName(player['COL 3'])}</span>
                         </td>
                         <td className="py-8 px-6 text-center">
                           <span className="inline-block bg-green-500/10 text-green-400 px-3 py-1 rounded-md border border-green-500/20 text-[10px] font-black uppercase">
@@ -254,12 +257,9 @@ export default function PlayerSearch() {
       </div>
 
 
-      {/* ========================================================================= */}
-      {/* VERSÃO MOBILE (EXCLUSIVA) - visível só em ecrãs pequenos                  */}
-      {/* ========================================================================= */}
+    
       <div className="flex lg:hidden flex-col h-full w-full overflow-hidden relative">
         
-        {/* OVERLAY E MENU MOBILE */}
         {isMobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
@@ -313,7 +313,7 @@ export default function PlayerSearch() {
               )}
             </header>
 
-            {/* FILTROS MOBILE (EM COLUNA) */}
+           
             <div className="flex flex-col gap-3 items-stretch bg-[#111827]/80 p-4 rounded-2xl border border-gray-800 mb-4 shrink-0">
               <div className="relative w-full">
                 <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -372,7 +372,7 @@ export default function PlayerSearch() {
                                 {player['COL 2']}
                               </span>
                               <span className="block text-gray-500 text-[9px] mt-0.5 truncate max-w-[100px]">
-                                {player['COL 3']}
+                                {getAcademyName(player['COL 3'])}
                               </span>
                             </div>
                           </div>

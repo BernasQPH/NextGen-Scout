@@ -51,13 +51,6 @@ const formations = {
     { id: 6, pos: 'CM', x: 30, y: 45 }, { id: 7, pos: 'CDM', x: 50, y: 60 }, { id: 8, pos: 'CM', x: 70, y: 45 },
     { id: 9, pos: 'LW', x: 20, y: 20 }, { id: 10, pos: 'ST', x: 50, y: 12 }, { id: 11, pos: 'RW', x: 80, y: 20 },
   ],
-  '4-2-3-1': [
-    { id: 1, pos: 'GK', x: 50, y: 92 },
-    { id: 2, pos: 'LB', x: 15, y: 75 }, { id: 3, pos: 'CB', x: 38, y: 78 }, { id: 4, pos: 'CB', x: 62, y: 78 }, { id: 5, pos: 'RB', x: 85, y: 75 },
-    { id: 6, pos: 'LDM', x: 35, y: 60 }, { id: 7, pos: 'RDM', x: 65, y: 60 },
-    { id: 8, pos: 'LAM', x: 20, y: 35 }, { id: 9, pos: 'CAM', x: 50, y: 35 }, { id: 10, pos: 'RAM', x: 80, y: 35 },
-    { id: 11, pos: 'ST', x: 50, y: 15 },
-  ],
   '3-5-2': [
     { id: 1, pos: 'GK', x: 50, y: 92 },
     { id: 2, pos: 'CB', x: 30, y: 78 }, { id: 3, pos: 'CB', x: 50, y: 81 }, { id: 4, pos: 'CB', x: 70, y: 78 },
@@ -72,6 +65,7 @@ export default function DreamTeam() {
   const [currentFormation, setCurrentFormation] = useState('4-4-2');
   const [dreamTeam, setDreamTeam] = useState({}); 
   const [bench, setBench] = useState([]);
+  const [benchSearch, setBenchSearch] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
 
@@ -93,7 +87,12 @@ export default function DreamTeam() {
     const saved = localStorage.getItem('nextgen_dreamteam');
     if (saved) {
       const { formation, starters, bench } = JSON.parse(saved);
-      setCurrentFormation(formation);
+      // Evitar erro caso tenham guardado '4-2-3-1' na cache anteriormente
+      if (!formations[formation]) {
+        setCurrentFormation('4-4-2');
+      } else {
+        setCurrentFormation(formation);
+      }
       setDreamTeam(starters);
       setBench(bench);
     }
@@ -152,10 +151,10 @@ export default function DreamTeam() {
         }
       });
 
+      // Puxa TODOS os jogadores que não estão no onze inicial (sem limitar a 8)
       const survivors = allPlayers
         .filter(p => !usedIds.has(p['COL 1']))
-        .sort((a, b) => b.calculatedRating - a.calculatedRating)
-        .slice(0, 8);
+        .sort((a, b) => b.calculatedRating - a.calculatedRating);
       
       setDreamTeam(newSelection);
       setBench(survivors);
@@ -176,18 +175,26 @@ export default function DreamTeam() {
       // ---------------------------------------------------
 
       setSelectedSlot(null);
+      setBenchSearch("");
     } catch (err) { console.error(err); }
     setIsGenerating(false);
   };
 
-  const handleSwap = async (benchIndex) => {
+  const handleSwap = async (playerId) => {
     if (selectedSlot === null || !dreamTeam[selectedSlot]) return;
     const newDreamTeam = { ...dreamTeam };
     const newBench = [...bench];
+    
+    // Procura o jogador usando a sua ID correta para que o filtro não o troque pelo errado
+    const benchIndex = newBench.findIndex(p => p['COL 1'] === playerId);
+    if (benchIndex === -1) return;
+
     const playerOnField = newDreamTeam[selectedSlot];
     const playerOnBench = newBench[benchIndex];
+    
     newDreamTeam[selectedSlot] = playerOnBench;
     newBench[benchIndex] = playerOnField;
+    
     setDreamTeam(newDreamTeam);
     setBench(newBench);
     setSelectedSlot(null);
@@ -216,6 +223,7 @@ export default function DreamTeam() {
     setDreamTeam({});
     setBench([]);
     setSelectedSlot(null);
+    setBenchSearch("");
     
     // Limpar localStorage
     localStorage.removeItem('nextgen_dreamteam');
@@ -228,13 +236,16 @@ export default function DreamTeam() {
     }
   };
 
+  // Filtrar o banco de suplentes de acordo com o nome pesquisado
+  const filteredBench = bench.filter(p => 
+    (p['COL 2'] || "").toLowerCase().includes(benchSearch.toLowerCase())
+  );
+
   return (
     // DIV MESTRE: Tranca o ecrã e impede qualquer scroll fantasma
     <div className="h-screen w-screen bg-[#0b1120] text-white overflow-hidden font-sans relative">
 
-      {/* ========================================================================= */}
-      {/* VERSÃO DESKTOP (A TUA ORIGINAL E INTOCÁVEL) - visível só em lg e maior      */}
-      {/* ========================================================================= */}
+      
       <div className="hidden lg:flex h-full w-full overflow-hidden">
         
         {/* SIDEBAR */}
@@ -267,10 +278,10 @@ export default function DreamTeam() {
             <div className="flex gap-4">
                <select 
                  value={currentFormation} 
-                 onChange={(e) => {setCurrentFormation(e.target.value); setDreamTeam({}); setBench([]);}} 
+                 onChange={(e) => {setCurrentFormation(e.target.value); setDreamTeam({}); setBench([]); setBenchSearch("");}} 
                  className="bg-[#0f172a] border border-gray-800 p-3 rounded-xl text-xs font-bold uppercase outline-none focus:ring-2 focus:ring-blue-600 transition-all"
                >
-                  {Object.keys(formations).map(f => <option key={f} value={f}>{f} SYSTEM</option>)}
+                 {Object.keys(formations).map(f => <option key={f} value={f}>{f} SYSTEM</option>)}
                </select>
                
                <button 
@@ -350,14 +361,27 @@ export default function DreamTeam() {
             </div>
 
             <aside className="w-85 bg-[#0f172a]/50 rounded-[2rem] border border-gray-800 p-6 flex flex-col backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2">
-                  <RefreshCcw size={14} className={selectedSlot ? "animate-spin-slow text-yellow-500" : ""} /> Tactical Bench
-                </h3>
+              <div className="flex flex-col gap-4 mb-4 shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2">
+                    <RefreshCcw size={14} className={selectedSlot ? "animate-spin-slow text-yellow-500" : ""} /> Tactical Bench
+                  </h3>
+                </div>
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <input 
+                    type="text" 
+                    value={benchSearch}
+                    onChange={(e) => setBenchSearch(e.target.value)}
+                    placeholder="Search player by name..." 
+                    className="w-full bg-[#111827] border border-gray-800 text-white rounded-lg py-2.5 pl-9 pr-3 text-xs outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition-all"
+                  />
+                </div>
               </div>
+
               <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
-                {bench.length > 0 ? bench.map((p, idx) => (
-                  <div key={p['COL 1']} onClick={() => handleSwap(idx)} className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${selectedSlot !== null ? 'border-blue-500/50 bg-blue-500/5 hover:border-yellow-500/50 hover:bg-yellow-500/5' : 'border-gray-800 bg-[#111827] hover:border-gray-600'}`}>
+                {filteredBench.length > 0 ? filteredBench.map((p) => (
+                  <div key={p['COL 1']} onClick={() => handleSwap(p['COL 1'])} className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group ${selectedSlot !== null ? 'border-blue-500/50 bg-blue-500/5 hover:border-yellow-500/50 hover:bg-yellow-500/5' : 'border-gray-800 bg-[#111827] hover:border-gray-600'}`}>
                      <div className="flex flex-col">
                         <span className="text-xs font-black uppercase italic leading-tight group-hover:text-blue-400">{p['COL 2']}</span>
                         <span className="text-[9px] text-gray-500 font-bold uppercase tracking-tighter">{p['COL 4']}</span>
@@ -368,7 +392,10 @@ export default function DreamTeam() {
                      </div>
                   </div>
                 )) : (
-                  <div className="h-full flex flex-col items-center justify-center opacity-20 text-[10px] font-black uppercase text-center italic space-y-4"><Zap size={32} /><p>Generate team to<br/>populate bench</p></div>
+                  <div className="h-full flex flex-col items-center justify-center opacity-20 text-[10px] font-black uppercase text-center italic space-y-4">
+                    <Zap size={32} />
+                    <p>{bench.length === 0 ? "Generate team to\npopulate bench" : "No players found"}</p>
+                  </div>
                 )}
               </div>
             </aside>
@@ -378,9 +405,6 @@ export default function DreamTeam() {
       </div>
 
 
-      {/* ========================================================================= */}
-      {/* VERSÃO MOBILE EXCLUSIVA - (Visível apenas em ecrãs pequenos)              */}
-      {/* ========================================================================= */}
       <div className="flex lg:hidden h-screen w-screen bg-[#0b1120] text-white overflow-hidden font-sans flex-col relative">
         
         {/* OVERLAY MOBILE */}
@@ -429,7 +453,7 @@ export default function DreamTeam() {
             <div className="flex gap-2">
               <select 
                 value={currentFormation} 
-                onChange={(e) => {setCurrentFormation(e.target.value); setDreamTeam({}); setBench([]);}} 
+                onChange={(e) => {setCurrentFormation(e.target.value); setDreamTeam({}); setBench([]); setBenchSearch("");}} 
                 className="bg-[#0f172a] border border-gray-800 p-3 rounded-xl text-[10px] font-bold uppercase outline-none focus:ring-2 focus:ring-blue-600 transition-all flex-1"
               >
                 {Object.keys(formations).map(f => <option key={f} value={f}>{f} SYSTEM</option>)}

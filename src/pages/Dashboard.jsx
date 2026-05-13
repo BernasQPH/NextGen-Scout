@@ -5,10 +5,8 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-// --- FUNÇÃO DE CÁLCULO DE QUALIDADE ATUAL (CORRIGIDA) ---
 const calculateCurrentQuality = (player) => {
   if (!player) return 0;
-  // Normalizar a posição para o cálculo
   const pos = (player["COL 4"] || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
   
   const finishing = Number(player['COL 5']) || 0;
@@ -26,7 +24,6 @@ const calculateCurrentQuality = (player) => {
     total = (reflexes + decisions) / 2;
   } 
   else if (pos === 'defesa central') {
-    // Corrigido para "passing" em vez de "pace" para bater com o Perfil
     total = (heading + aggression + decisions + passing) / 4;
   } 
   else if (pos === 'defesa direito' || pos === 'defesa esquerdo') {
@@ -157,11 +154,10 @@ export default function Dashboard() {
       })
       .catch(err => console.error("Erro stats", err));
 
-    axios.get('http://localhost:3001/api/top-academies')
+    axios.get('http://localhost:3001/api/academies')
       .then(res => {
         if (res.data && res.data.length > 0) {
-          const elite = res.data.filter(a => Number(a.rating) === 5);
-          const pool = elite.length > 0 ? elite : res.data;
+          const pool = res.data;
           setRandomAcademy(pool[Math.floor(Math.random() * pool.length)]);
         }
       })
@@ -263,7 +259,7 @@ export default function Dashboard() {
                     key={idx}
                     name={p['COL 2'] || p.name || 'Desconhecido'}
                     position={getShortPos(p['COL 4'] || p.position)}
-                    rating={calculateCurrentQuality(p)} // AQUI: Qualidade Real
+                    rating={calculateCurrentQuality(p)}
                     onClick={() => navigate(`/perfil/${p['COL 1'] || p.id}`)}
                   />
                 )) : (
@@ -281,10 +277,12 @@ export default function Dashboard() {
               <div className="group bg-[#111827]/80 p-10 rounded-[2.5rem] border border-gray-800 flex flex-col justify-between hover:border-blue-500 transition-all shadow-2xl relative overflow-hidden h-full min-h-[300px]">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/5 rounded-full blur-[100px] -mr-32 -mt-32 transition-all group-hover:bg-blue-600/10"></div>
                 <div className="relative z-10 flex flex-col items-start gap-6">
-                  <div className="w-20 h-20 bg-amber-500 bg-opacity-20 rounded-2xl flex items-center justify-center border border-amber-500/30 transition-transform group-hover:scale-110 shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-8 text-amber-500">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                    </svg>
+                  <div className="w-20 h-20 bg-gray-900 rounded-2xl flex items-center justify-center border border-gray-700/50 transition-transform group-hover:scale-110 shadow-inner overflow-hidden p-2">
+                    {randomAcademy && randomAcademy.logo_url ? (
+                      <img src={randomAcademy.logo_url} alt={randomAcademy.nome} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-gray-600 text-xs font-black uppercase tracking-tighter">Logo</span>
+                    )}
                   </div>
                   <div>
                     {randomAcademy ? (
@@ -374,7 +372,7 @@ export default function Dashboard() {
                     key={idx}
                     name={p['COL 2'] || p.name || 'Desconhecido'}
                     position={getShortPos(p['COL 4'] || p.position)}
-                    rating={calculateCurrentQuality(p)} // AQUI: Qualidade Real
+                    rating={calculateCurrentQuality(p)}
                     onClick={() => navigate(`/perfil/${p['COL 1'] || p.id}`)}
                   />
                 )) : (
@@ -390,10 +388,12 @@ export default function Dashboard() {
               <div className="group bg-[#111827]/80 p-6 rounded-3xl border border-gray-800 flex flex-col justify-between hover:border-blue-500 transition-all shadow-2xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full blur-[50px] -mr-16 -mt-16 transition-all group-hover:bg-blue-600/10"></div>
                 <div className="relative z-10 flex flex-col items-start gap-4">
-                  <div className="w-16 h-16 bg-amber-500 bg-opacity-20 rounded-2xl flex items-center justify-center border border-amber-500/30 transition-transform shadow-inner">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 text-amber-500">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-                    </svg>
+                  <div className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center border border-gray-700/50 transition-transform shadow-inner overflow-hidden p-1.5">
+                    {randomAcademy && randomAcademy.logo_url ? (
+                      <img src={randomAcademy.logo_url} alt={randomAcademy.nome} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="text-gray-600 text-[8px] font-black uppercase tracking-tighter">Logo</span>
+                    )}
                   </div>
                   <div>
                     {randomAcademy ? (

@@ -3,13 +3,32 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Star, StarHalf } from 'lucide-react'; 
 
+
+const getAcademyName = (id) => {
+    const academies = {
+        "1": "Benfica Campus",
+        "2": "La Masia",
+        "3": "Academia Cristiano Ronaldo",
+        "4": "FC Porto Academy",
+        "5": "Yung Ajax",
+        "6": "SC Braga Academy",
+        "7": "La Fabrica",
+        "8": "Academia River Plate",
+        "9": "Chelsea Academy"
+    };
+    return academies[String(id)] || id;
+};
+
 const Perfil = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [player, setPlayer] = useState(null);
     const [loading, setLoading] = useState(true);
+    // ESTADO PARA A SHORTLIST
+    const [isShortlisted, setIsShortlisted] = useState(false);
 
     useEffect(() => {
+       
         axios.get(`http://localhost:3001/api/players/${id}`)
             .then(res => {
                 const data = Array.isArray(res.data) ? res.data[0] : res.data;
@@ -20,7 +39,37 @@ const Perfil = () => {
                 console.error("Erro ao carregar jogador:", err);
                 setLoading(false);
             });
+
+        
+        axios.get('http://localhost:3001/api/shortlist-players')
+            .then(res => {
+                const idsBD = res.data.map(item => String(item.player_id));
+                setIsShortlisted(idsBD.includes(String(id)));
+            })
+            .catch(err => console.error("Erro ao verificar shortlist:", err));
     }, [id]);
+
+    
+    const handleToggleShortlist = async () => {
+        if (isShortlisted) {
+            try {
+                await axios.delete(`http://localhost:3001/api/shortlist/${id}`);
+                setIsShortlisted(false);
+            } catch (err) {
+                console.error("Erro ao remover da shortlist:", err);
+            }
+        } else {
+            try {
+                await axios.post('http://localhost:3001/api/shortlist', {
+                    player_id: id,
+                    data_adicionado: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                });
+                setIsShortlisted(true);
+            } catch (err) {
+                console.error("Erro ao adicionar à shortlist:", err);
+            }
+        }
+    };
 
     if (loading) return (
         <div className="flex items-center justify-center min-h-screen bg-[#0a1020] w-full m-0 p-0 text-gray-400">
@@ -36,7 +85,7 @@ const Perfil = () => {
         </div>
     );
 
-    // --- ALGORITMO DE SCOUTING ---
+    
     const getOverallRating = () => {
         const pos = (player["COL 4"] || "").toLowerCase()
                     .normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -85,7 +134,7 @@ const Perfil = () => {
 
     const overallScore = getOverallRating();
 
-    // --- ALGORITMO DO VEREDICTO DINÂMICO (7 NÍVEIS) ---
+   
     const getScoutVerdict = (score) => {
         const numScore = Number(score);
         
@@ -110,7 +159,7 @@ const Perfil = () => {
         return "LOW PRIORITY: Based on current metrics, the player does not meet the minimum tactical requirements for our elite observation protocol.";
     };
 
-    // --- ALGORITMO DAS ESTRELAS ---
+    
     const getStarRating = (score) => {
         const numScore = Number(score);
         if (numScore >= 16) return 5;
@@ -126,7 +175,7 @@ const Perfil = () => {
 
     const playerStars = getStarRating(overallScore);
 
-    // Componente visual para as estrelas
+
     const RenderStars = ({ rating }) => {
         const stars = [];
         for (let i = 1; i <= 5; i++) {
@@ -223,7 +272,7 @@ const Perfil = () => {
                 <div className="grid grid-cols-3 gap-6 mb-6">
                     <div className="p-6 bg-blue-900/50 rounded-2xl border border-blue-800 text-center">
                         <span className="block text-[10px] text-blue-300 uppercase tracking-widest mb-1">ACADEMY</span>
-                        <span className="text-sm font-semibold text-white">{player["COL 3"]}</span>
+                        <span className="text-sm font-semibold text-white">{getAcademyName(player["COL 3"])}</span>
                     </div>
                     <div className="p-6 bg-blue-900/50 rounded-2xl border border-blue-800 text-center">
                         <span className="block text-[10px] text-blue-300 uppercase tracking-widest mb-1">POSITION</span>
@@ -231,12 +280,16 @@ const Perfil = () => {
                     </div>
                     <div className="p-6 bg-blue-900/50 rounded-2xl border border-blue-800 text-center">
                         <span className="block text-[10px] text-blue-300 uppercase tracking-widest mb-1">AGE</span>
-                        <span className="text-sm font-semibold text-white">{player["COL 6"]}</span>
+                        <span className="text-sm font-semibold text-white">{player["COL 15"]}</span>
                     </div>
                 </div>
 
-                <button className="w-full p-4 bg-blue-600 rounded-2xl text-xs font-black text-white uppercase tracking-widest shadow-lg hover:bg-blue-700 transition-colors mb-6 active:scale-95">
-                    Add to Shortlist
+                <button 
+                    onClick={handleToggleShortlist}
+                    className={`w-full p-4 rounded-2xl text-xs font-black text-white uppercase tracking-widest shadow-lg transition-colors mb-6 active:scale-95 
+                    ${isShortlisted ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                >
+                    {isShortlisted ? 'Remove from Shortlist' : 'Add to Shortlist'}
                 </button>
 
                 <div className="p-6 bg-gray-900 rounded-2xl shadow-lg border border-gray-800">

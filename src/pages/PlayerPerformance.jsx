@@ -190,6 +190,7 @@ export default function PlayerPerformance() {
 
       <div className="flex lg:hidden flex-col h-full w-full overflow-hidden relative">
         
+        
         {isMobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"

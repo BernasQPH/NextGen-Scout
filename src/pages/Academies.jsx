@@ -25,7 +25,6 @@ export default function Academies() {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState(null);
 
-  // Estado para a gaveta do menu no telemóvel
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fetchAcademies = async () => {
@@ -40,7 +39,6 @@ export default function Academies() {
   };
 
   useEffect(() => {
-    // Verificar sessão
     const savedUser = localStorage.getItem('nextgen_user');
     if (savedUser) {
       try {
@@ -56,7 +54,6 @@ export default function Academies() {
     fetchAcademies();
   }, [navigate]);
 
-  // FUNÇÃO DE LOGOUT
   const handleLogout = () => {
     localStorage.removeItem('nextgen_user');
     navigate('/register');
@@ -68,15 +65,10 @@ export default function Academies() {
   };
 
   return (
-    // DIV MESTRE: TRANCA O ECRÃ
     <div className="h-screen w-screen bg-[#0b1120] text-white overflow-hidden font-sans relative">
       
-      {/* ========================================================================= */}
-      {/* VERSÃO DESKTOP (A TUA ORIGINAL E INTOCÁVEL) - visível só em lg e maior      */}
-      {/* ========================================================================= */}
       <div className="hidden lg:flex h-full w-full overflow-hidden">
         
-        {/* BARRA LATERAL FIXA */}
         <aside className="w-72 bg-[#0f172a] p-8 flex flex-col border-r border-gray-800 shrink-0 h-full">
           <div className="flex items-center gap-3 text-blue-500 font-black text-2xl mb-12 uppercase italic tracking-tighter">
             <Trophy size={28} className="fill-blue-500/20" />
@@ -131,6 +123,7 @@ export default function Academies() {
                 academies.map((academy) => (
                   <div 
                     key={academy.id}
+                    onClick={() => navigate(`/academies/${academy.id}`)}
                     className="flex items-center gap-6 group cursor-pointer transition-all hover:translate-x-2"
                   >
                     <div className="w-20 h-20 bg-[#1e293b]/50 border border-yellow-600/30 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden group-hover:border-yellow-500 transition-all shadow-lg">
@@ -188,11 +181,8 @@ export default function Academies() {
         </main>
       </div>
 
-
-      
       <div className="flex lg:hidden flex-col h-full w-full overflow-hidden relative">
         
-       
         {isMobileMenuOpen && (
           <div 
             className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
@@ -200,7 +190,6 @@ export default function Academies() {
           ></div>
         )}
 
-        {/* BARRA LATERAL GAVETA */}
         <aside className={`fixed z-50 h-full w-72 bg-[#0f172a] p-8 flex flex-col border-r border-gray-800 transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <button 
             onClick={() => setIsMobileMenuOpen(false)}
@@ -260,6 +249,7 @@ export default function Academies() {
                 academies.map((academy) => (
                   <div 
                     key={academy.id}
+                    onClick={() => navigate(`/academies/${academy.id}`)}
                     className="flex flex-col items-start gap-4 cursor-pointer bg-[#111827]/40 p-4 rounded-2xl border border-gray-800 relative"
                   >
                     <div className="flex items-center gap-4 w-full">

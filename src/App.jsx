@@ -10,6 +10,7 @@ import Academies from './pages/Academies';
 import Simulator from './pages/Simulator'; 
 import Register from './pages/Register'; 
 import PlayerPerformance from './pages/PlayerPerformance'; 
+import AcademiesList from './pages/AcademiesList';
 
 export default function App() {
   return (
@@ -74,6 +75,12 @@ export default function App() {
 
       {
       <Route path="/player-performance" element={<PlayerPerformance />} />
+      
+      
+      }
+
+      {
+      <Route path="/academies/:id" element={<AcademiesList />} />
       
       
       }

@@ -241,7 +241,7 @@ const Simulator = () => {
     const homeFormString = savedLocal.formation || '4-3-3';
     const awayFormString = '4-3-3'; 
 
-    const assignTactics = (playersPool, formationStr) => {
+    const assignTactics = (playersPool, formationStr, prefix) => {
       const slots = JSON.parse(JSON.stringify(formations[formationStr] || formations['4-3-3']));
       const mapping = {};
       const selectedPlayers = [];
@@ -250,7 +250,13 @@ const Simulator = () => {
       slots.forEach(slot => {
         const reqPos = getEquivalentPos(slot.pos);
         const match = playersPool.find(p => !usedIds.has(p?.id) && p?.position === reqPos);
-        if (match) { mapping[match.id] = slot; selectedPlayers.push(match); usedIds.add(match.id); slot._filled = true; }
+        if (match) { 
+          const uniqueId = `${prefix}_${match.id}`;
+          mapping[uniqueId] = slot; 
+          selectedPlayers.push({ ...match, originalId: match.id, id: uniqueId }); 
+          usedIds.add(match.id); 
+          slot._filled = true; 
+        }
       });
 
       const emptySlots = slots.filter(s => !s._filled);
@@ -259,8 +265,9 @@ const Simulator = () => {
       emptySlots.forEach((slot, idx) => {
         if (remainingPlayers[idx]) {
           const fallbackPlayer = remainingPlayers[idx];
-          mapping[fallbackPlayer.id] = slot;
-          selectedPlayers.push(fallbackPlayer);
+          const uniqueId = `${prefix}_${fallbackPlayer.id}`;
+          mapping[uniqueId] = slot;
+          selectedPlayers.push({ ...fallbackPlayer, originalId: fallbackPlayer.id, id: uniqueId });
           usedIds.add(fallbackPlayer.id);
         }
       });
@@ -269,8 +276,8 @@ const Simulator = () => {
     };
 
     try {
-      const homeData = assignTactics(myTeam, homeFormString);
-      const awayData = assignTactics(opponentRoster, awayFormString);
+      const homeData = assignTactics(myTeam, homeFormString, 'home');
+      const awayData = assignTactics(opponentRoster, awayFormString, 'away');
 
       setTeamTactics({ home: homeData.mapping, away: awayData.mapping });
 
@@ -284,7 +291,6 @@ const Simulator = () => {
 
   }, [selectedOpponent, opponentRoster, myTeam]);
 
-  // CORREÇÃO CRÍTICA: Desliga o Auto-Scroll no Desktop para impedir bugs de renderização
   useEffect(() => { 
     if (logEndRef.current && window.innerWidth < 1024) {
       logEndRef.current.scrollIntoView({ behavior: "smooth" }); 
@@ -300,8 +306,9 @@ const Simulator = () => {
     }
     
     Object.values(statusJogadores).filter(p => p.equipa === 'home').forEach(player => {
-      const current = existingData[player.id] || {
-        id: player.id,
+      const realId = player.originalId || player.id;
+      const current = existingData[realId] || {
+        id: realId,
         name: player.name,
         position: player.position,
         matches: 0,
@@ -313,7 +320,7 @@ const Simulator = () => {
       const playerGoals = matchStats.matchEvents.filter(e => e.team === 'home' && e.type === 'Golo' && e.player === player.name).length;
       const playerAssists = matchStats.matchEvents.filter(e => e.team === 'home' && e.type === 'Golo' && e.assist === player.name).length;
 
-      existingData[player.id] = {
+      existingData[realId] = {
         ...current,
         name: player.name, 
         position: player.position,
@@ -610,7 +617,6 @@ const Simulator = () => {
     );
   }
 
-  // CÁLCULOS GLOBAIS MOVIDOS PARA CIMA
   const homeOvr = 72; 
   const awayOvr = Number(selectedOpponent?.overall) || 75;
   const ovrDiff = awayOvr - homeOvr;
@@ -637,7 +643,6 @@ const Simulator = () => {
   const sortedEvents = [...matchStats.matchEvents].sort((a, b) => a.min - b.min);
 
   return (
-    // DIV MESTRE: TRANCA O ECRÃ
     <div className="h-screen w-screen bg-[#0b1120] overflow-hidden font-sans relative text-white">
 
       

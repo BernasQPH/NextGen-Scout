@@ -5,6 +5,21 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const getAcademyName = (id) => {
+    const academies = {
+        "1": "Benfica Campus",
+        "2": "La Masia",
+        "3": "Academia Cristiano Ronaldo",
+        "4": "FC Porto Academy",
+        "5": "Yung Ajax",
+        "6": "SC Braga Academy",
+        "7": "La Fabrica",
+        "8": "Academia River Plate",
+        "9": "Chelsea Academy"
+    };
+    return academies[String(id)] || id;
+};
+
 const NavItem = ({ icon: Icon, label, active = false, onClick }) => (
   <div onClick={onClick} className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all mb-1 ${active ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20 font-bold' : 'text-gray-400 hover:bg-gray-800/50 hover:text-white'}`}>
     {Icon && <Icon size={20} />}
@@ -18,7 +33,6 @@ export default function Shortlist() {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState(null);
 
-  // NOVO ESTADO: Controlar a gaveta do menu no telemóvel
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fetchShortlist = async () => {
@@ -64,15 +78,10 @@ export default function Shortlist() {
   };
 
   return (
-    // DIV MESTRE: Tranca o ecrã e impede scroll duplo
     <div className="h-screen w-screen bg-[#0b1120] text-white overflow-hidden font-sans relative">
 
-      {/* ========================================================================= */}
-      {/* VERSÃO DESKTOP (A TUA ORIGINAL E INTOCÁVEL) - visível só em lg e maior      */}
-      {/* ========================================================================= */}
       <div className="hidden lg:flex h-full w-full overflow-hidden">
         
-        {/* BARRA LATERAL FIXA NO PC */}
         <aside className="w-72 bg-[#0f172a] p-8 flex flex-col border-r border-gray-800 shrink-0 h-full">
           <div className="flex items-center gap-3 text-blue-500 font-black text-2xl mb-12 uppercase italic tracking-tighter">
                       <Trophy size={28} className="fill-blue-500/20" />
@@ -152,7 +161,7 @@ export default function Shortlist() {
                           </div>
                         </td>
                         <td className="py-6 px-6">
-                          <span className="text-gray-400 font-bold text-xs uppercase italic">{player['COL 3']}</span>
+                          <span className="text-gray-400 font-bold text-xs uppercase italic">{getAcademyName(player['COL 3'])}</span>
                         </td>
                         <td className="py-6 px-6 text-center">
                           <span className="inline-block bg-blue-500/5 text-blue-400/80 px-3 py-1 rounded-lg border border-blue-500/10 text-[10px] font-black uppercase tracking-tighter">
@@ -197,9 +206,6 @@ export default function Shortlist() {
         </main>
       </div>
 
-      {/* ========================================================================= */}
-      {/* VERSÃO MOBILE (EXCLUSIVA) - visível só em ecrãs pequenos                  */}
-      {/* ========================================================================= */}
       <div className="flex lg:hidden flex-col h-full w-full overflow-hidden relative">
         
         {isMobileMenuOpen && (
@@ -286,7 +292,7 @@ export default function Shortlist() {
                                 {player['COL 2']}
                               </span>
                               <span className="text-gray-500 text-[9px] font-bold uppercase tracking-widest truncate max-w-[120px]">
-                                {player['COL 3']}
+                                {getAcademyName(player['COL 3'])}
                               </span>
                             </div>
                           </div>
