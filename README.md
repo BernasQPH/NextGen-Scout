@@ -12,7 +12,7 @@ Este projeto é uma aplicação de monitorização de jovens talentos, permitind
 ### 1. Base de Dados
 O projeto utiliza um esquema relacional fornecido no ficheiro SQL incluído.
 - Utilize o seu gestor de base de dados de preferência (MySQL, MariaDB, etc...).
-- Crie uma base de dados (schema) com o nome `nextgen_scout`.
+- Crie uma base de dados (schema) com o nome `nextgen-scout`.
 - Importe o ficheiro **`nextgen-scout.sql`** presente na raiz do projeto. 
 
 ### 2. Backend (Servidor)
