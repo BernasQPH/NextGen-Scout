@@ -228,9 +228,10 @@ export default function DreamTeam() {
     // Limpar localStorage
     localStorage.removeItem('nextgen_dreamteam');
     
-    // Tentar limpar a base de dados enviando um array vazio
+    // Chamar a rota de delete no servidor
     try {
-      await axios.post('http://localhost:3001/api/save_dream_team', { playerIds: [] });
+      await axios.delete('http://localhost:3001/api/clear_dream_team');
+      console.log("Dream Team removida da base de dados.");
     } catch (err) {
       console.error("Erro ao limpar BD:", err);
     }

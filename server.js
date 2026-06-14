@@ -241,7 +241,7 @@ app.post('/api/register', (req, res) => {
 
     // Verificar se os campos não estão vazios
     if (!username || !email || !password) {
-        return res.status(400).json({ message: "Por favor, preenche todos os campos." });
+        return res.status(400).json({ message: "Please fill in all fields." });
     }
 
     const sql = "INSERT INTO user (username, email, password) VALUES (?, ?, ?)";
@@ -251,14 +251,14 @@ app.post('/api/register', (req, res) => {
             console.error("Erro ao registar:", err);
             // O erro 1062 do MySQL significa "Duplicate entry" (Email ou Username já existe)
             if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ message: "O email ou nome de treinador já está em uso!" });
+                return res.status(400).json({ message: "The email or username is already in use!" });
             }
-            return res.status(500).json({ message: "Erro na base de dados." });
+            return res.status(500).json({ message: "Database error." });
         }
         
         // Se correu bem, devolve os dados (sem a password) para o React guardar na sessão
         res.json({ 
-            message: "Conta criada com sucesso!", 
+            message: "Account created successfully!", 
             user: { id: result.insertId, username, email } 
         });
     });
@@ -272,7 +272,7 @@ app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).json({ message: "Preenche o email e a palavra-passe." });
+        return res.status(400).json({ message: "Please fill in the email and password." });
     }
 
     // Procura na base de dados um utilizador com este email e com esta password exata
@@ -286,14 +286,64 @@ app.post('/api/login', (req, res) => {
 
         // Se o array results estiver vazio, significa que não encontrou correspondência
         if (results.length === 0) {
-            return res.status(401).json({ message: "Email ou palavra-passe incorretos." });
+            return res.status(401).json({ message: "Email or password incorrect." });
         }
 
         // Se encontrou, faz o login com sucesso!
         res.json({ 
-            message: "Login efetuado com sucesso!", 
+            message: "Login successful!", 
             user: results[0] 
         });
+    });
+});
+
+// Adiciona esta rota junto das tuas outras rotas (ex: app.post('/api/login', ...))
+
+app.post('/api/recover-password', (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ message: "Email and new password are required." });
+  }
+
+  // 1. Verificar se o utilizador existe na tabela 'user'
+  const checkUserQuery = 'SELECT * FROM user WHERE email = ?';
+  
+  db.query(checkUserQuery, [email], (err, results) => {
+    if (err) {
+      console.error("Erro ao procurar utilizador:", err);
+      return res.status(500).json({ message: 'Erro interno no servidor.' });
+    }
+
+    if (results.length === 0) {
+      // Se não encontrar o email na tabela
+      return res.status(404).json({ message: "No account found with this email." });
+    }
+
+    // 2. Atualizar a password na base de dados
+    const updateQuery = 'UPDATE user SET password = ? WHERE email = ?';
+    
+    db.query(updateQuery, [newPassword, email], (updateErr, updateResults) => {
+      if (updateErr) {
+        console.error("Erro ao atualizar password:", updateErr);
+        return res.status(500).json({ message: "Error saving the new password to the database." });
+      }
+
+      // Tudo correu bem, devolve sucesso ao Frontend
+      return res.status(200).json({ message: "Password updated successfully!" });
+    });
+  });
+});
+
+app.delete('/api/clear_dream_team', (req, res) => {
+    const sql = "DELETE FROM dream_team";
+    
+    db.query(sql, (err, result) => {
+        if (err) {
+            console.error("Erro ao limpar tabela dream_team:", err);
+            return res.status(500).json({ message: "Erro ao limpar a base de dados." });
+        }
+        res.status(200).json({ message: "Tabela dream_team limpa com sucesso!" });
     });
 });
 
