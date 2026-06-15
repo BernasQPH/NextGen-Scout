@@ -617,6 +617,27 @@ const Simulator = () => {
     );
   }
 
+  // --- NOVA VERIFICAÇÃO ADICIONADA AQUI ---
+  // Bloqueia a interface se o fetching já terminou e não existem jogadores na Dream Team
+  if (!isLoadingTeams && myTeam && myTeam.length === 0) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-[#0b1120] text-white flex-col p-10 text-center">
+        <Shield size={64} className="text-red-500 mb-6" />
+        <h1 className="text-4xl font-black mb-4 uppercase italic tracking-tighter">Your Dream Team is Empty!</h1>
+        <p className="text-gray-400 mb-8 max-w-md">
+         You haven't added any players to your Dream Team yet. You need to recruit promising young talents before you can simulate matches!
+        </p>
+        <button 
+          onClick={() => navigate('/dreamteam')} 
+          className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all shadow-lg shadow-blue-900/20"
+        >
+          Return to Dream Team
+        </button>
+      </div>
+    );
+  }
+  // ----------------------------------------
+
   const homeOvr = 72; 
   const awayOvr = Number(selectedOpponent?.overall) || 75;
   const ovrDiff = awayOvr - homeOvr;
