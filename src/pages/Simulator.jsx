@@ -617,8 +617,7 @@ const Simulator = () => {
     );
   }
 
-  // --- NOVA VERIFICAÇÃO ADICIONADA AQUI ---
-  // Bloqueia a interface se o fetching já terminou e não existem jogadores na Dream Team
+  
   if (!isLoadingTeams && myTeam && myTeam.length === 0) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-[#0b1120] text-white flex-col p-10 text-center">
